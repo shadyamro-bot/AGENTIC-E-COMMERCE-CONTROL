@@ -1,8 +1,8 @@
 {
   "name": "aec-railway-unified-flat",
-  "version": "1.2.3",
+  "version": "1.3.0",
   "private": true,
-  "description": "AGENTIC E-COMMERCE CONTROL - Railway flat upload package v1.2.3 file health and exclusive status counts",
+  "description": "AGENTIC E-COMMERCE CONTROL - Railway flat upload package v1.3.0 consolidated stable release with AI Agent, expanded roles, file fixes and production safety",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

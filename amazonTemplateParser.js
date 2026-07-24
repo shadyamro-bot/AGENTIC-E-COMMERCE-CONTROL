@@ -5,7 +5,7 @@ const FIELD_ALIASES = {
   parentSku: ['parent_sku','parent_sku_value','parent_sku_id'],
   parentage: ['parentage','parentage_level','parent_child','parent_child_relationship','parent_child_relationship_type'],
   relationship: ['relationship_type','relationship'],
-  variationTheme: ['variation_theme','variationtheme'],
+  variationTheme: ['variation_theme','variationtheme','variation_theme_name'],
   title: ['item_name','product_name','title','item_title'],
   color: ['color_name','color','colour_name','colour'],
   colorMap: ['color_map','colour_map'],
@@ -133,6 +133,8 @@ function analyzeListing(matrix, headerIndex, options = {}) {
     if (!hasProductSignal) { if (values.some(nonEmpty)) ignoredRows++; continue; }
     if (dataStartRow == null) dataStartRow = i + 1;
     const result = classifyListingRow(canonical, i + 1, seen);
+    result.hasColor = nonEmpty(firstValue(canonical,'color')) || nonEmpty(firstValue(canonical,'colorMap'));
+    result.hasSize = nonEmpty(firstValue(canonical,'size'));
     results.push(result);
     if (result.rowType === 'PARENT') parentRows++;
     else childRows++;
@@ -144,6 +146,21 @@ function analyzeListing(matrix, headerIndex, options = {}) {
     if (sampleRows.length < 25) sampleRows.push({ excelRow: i + 1, rowType: result.rowType, ...raw });
   }
 
+  const supportsSizeColor = results.some(r => r.rowType === 'CHILD' && r.hasColor && r.hasSize);
+  if (supportsSizeColor) {
+    for (const row of results) {
+      if (row.rowType !== 'PARENT') continue;
+      for (const issue of row.issues) {
+        if (issue.code === 'MISSING_VARIATION_THEME') {
+          issue.beforeValue = '';
+          issue.suggestedValue = 'SizeColor';
+          issue.fixable = true;
+          issue.patch = { excelRow: row.row, field: 'variationTheme', value: 'SizeColor' };
+        }
+      }
+    }
+  }
+  for (const row of results) { delete row.hasColor; delete row.hasSize; }
   const issueRows = results.filter(r => r.issues.length);
   const warningCounts = new Map();
   for (const row of issueRows) for (const issue of row.issues.filter(x => x.severity === 'WARNING')) warningCounts.set(issue.message, (warningCounts.get(issue.message) || 0) + 1);
@@ -213,7 +230,7 @@ function analyzeWorkbook(workbook, XLSX, fileType='LISTING') {
     sheetName: detected.sheetName,
     headerRow: detected.headerIndex + 1,
     matchedFields: detected.matched,
-    analysisVersion: '1.2.2'
+    analysisVersion: '1.3.0'
   };
 }
 

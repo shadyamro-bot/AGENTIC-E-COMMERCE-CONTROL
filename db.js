@@ -11,7 +11,7 @@ async function initDb() {
   await query(`
     CREATE TABLE IF NOT EXISTS users (
       id BIGSERIAL PRIMARY KEY, name TEXT NOT NULL, email TEXT UNIQUE,
-      role TEXT NOT NULL CHECK (role IN ('CREATOR','REVIEWER','PUBLISHER','ADMIN')),
+      role TEXT NOT NULL,
       active BOOLEAN NOT NULL DEFAULT TRUE, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
     CREATE TABLE IF NOT EXISTS products (
@@ -59,6 +59,24 @@ async function initDb() {
       status TEXT NOT NULL, external_id TEXT, payload JSONB NOT NULL DEFAULT '{}'::jsonb,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+    CREATE TABLE IF NOT EXISTS ai_conversations (
+      id BIGSERIAL PRIMARY KEY, title TEXT NOT NULL, created_by TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS ai_messages (
+      id BIGSERIAL PRIMARY KEY, conversation_id BIGINT NOT NULL REFERENCES ai_conversations(id) ON DELETE CASCADE,
+      role TEXT NOT NULL, content TEXT NOT NULL, metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS file_approvals (
+      id BIGSERIAL PRIMARY KEY, file_id BIGINT NOT NULL REFERENCES uploaded_files(id) ON DELETE CASCADE,
+      excel_row INTEGER NOT NULL, sku TEXT, rule_code TEXT NOT NULL, action TEXT NOT NULL DEFAULT 'PATCH_FILE',
+      status TEXT NOT NULL DEFAULT 'PENDING', requested_by TEXT NOT NULL, reviewed_by TEXT,
+      before_value JSONB NOT NULL DEFAULT '{}'::jsonb, proposed_value JSONB NOT NULL DEFAULT '{}'::jsonb,
+      patch JSONB NOT NULL DEFAULT '{}'::jsonb, risk_level TEXT NOT NULL DEFAULT 'LOW', notes TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), reviewed_at TIMESTAMPTZ,
+      UNIQUE(file_id, excel_row, rule_code)
+    );
   `);
   for (const [table, definition] of [
     ['users', 'email TEXT UNIQUE'], ['users', 'active BOOLEAN NOT NULL DEFAULT TRUE'],
@@ -70,12 +88,12 @@ async function initDb() {
     ['approvals', "before_value JSONB NOT NULL DEFAULT '{}'::jsonb"], ['approvals', "proposed_value JSONB NOT NULL DEFAULT '{}'::jsonb"], ['approvals', "risk_level TEXT NOT NULL DEFAULT 'MEDIUM'"],
     ['uploaded_files', 'header_row INTEGER'], ['uploaded_files', 'data_start_row INTEGER'], ['uploaded_files', 'parent_rows INTEGER NOT NULL DEFAULT 0'], ['uploaded_files', 'child_rows INTEGER NOT NULL DEFAULT 0'], ['uploaded_files', 'warning_rows INTEGER NOT NULL DEFAULT 0'], ['uploaded_files', 'valid_rows INTEGER NOT NULL DEFAULT 0'], ['uploaded_files', 'ignored_rows INTEGER NOT NULL DEFAULT 0'], ['uploaded_files', 'file_health INTEGER NOT NULL DEFAULT 100'], ['uploaded_files', "warning_summary JSONB NOT NULL DEFAULT '[]'::jsonb"], ['uploaded_files', "analysis_version TEXT NOT NULL DEFAULT '1.2.0'"]
   ]) await addColumn(table, definition);
+  await query(`DO $$ DECLARE c RECORD; BEGIN FOR c IN SELECT conname FROM pg_constraint WHERE conrelid='users'::regclass AND contype='c' LOOP EXECUTE format('ALTER TABLE users DROP CONSTRAINT %I',c.conname); END LOOP; END $$;`);
   const count = await query('SELECT COUNT(*)::int AS count FROM users');
   if (count.rows[0].count === 0) {
     await query(`INSERT INTO users(name,email,role) VALUES
-      ('Project Admin','admin@aec.local','ADMIN'),('Listing Creator','creator@aec.local','CREATOR'),
-      ('Quality Reviewer','reviewer@aec.local','REVIEWER'),('Amazon Publisher','publisher@aec.local','PUBLISHER')`);
-  } else await query("UPDATE users SET email=LOWER(REPLACE(name,' ','_')) || '@aec.local' WHERE email IS NULL");
+      ('Project Admin','admin@aec.local','ADMIN'),('Operations Manager','operations@aec.local','OPERATIONS_MANAGER'),('Listing Specialist','listing@aec.local','LISTING_SPECIALIST'),('Listing Creator','creator@aec.local','CREATOR'),('Quality Reviewer','reviewer@aec.local','REVIEWER'),('Amazon Publisher','publisher@aec.local','PUBLISHER'),('Data Analyst','analyst@aec.local','ANALYST'),('Read Only Viewer','viewer@aec.local','VIEWER')`);
+  } else { await query("UPDATE users SET email=LOWER(REPLACE(name,' ','_')) || '@aec.local' WHERE email IS NULL"); await query(`INSERT INTO users(name,email,role) VALUES ('Operations Manager','operations@aec.local','OPERATIONS_MANAGER'),('Listing Specialist','listing@aec.local','LISTING_SPECIALIST'),('Data Analyst','analyst@aec.local','ANALYST'),('Read Only Viewer','viewer@aec.local','VIEWER') ON CONFLICT(email) DO NOTHING`); }
   return { connected: true };
 }
 module.exports = { query, initDb, pool };

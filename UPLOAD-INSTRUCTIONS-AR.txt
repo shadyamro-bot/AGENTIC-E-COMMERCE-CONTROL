@@ -1,4 +1,7 @@
-ارفع جميع الملفات الموجودة داخل هذا المجلد إلى جذر GitHub مباشرة.
-Commit message: Deploy AEC v1.2.2 parser fix
-Railway Start Command: npm start
-Root Directory: فارغ
+1) فك الضغط.
+2) GitHub > Add file > Upload files.
+3) ارفع كل الملفات الموجودة داخل المجلد إلى جذر المستودع.
+4) وافق على الاستبدال.
+5) Commit message: Deploy AEC v1.3.0 consolidated AI agent
+6) Railway سيعمل Deploy تلقائيا.
+7) تحقق من /api/health وأن version = 1.3.0

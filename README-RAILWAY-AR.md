@@ -1,14 +1,23 @@
-# AEC Railway v1.2.3 — File Health & Status Fix
+# AEC Railway v1.3.0 — Consolidated Stable + AI Agent
 
-## التحديثات
-- فصل النتائج إلى Valid وAccepted with warnings وBlocked وIgnored بدون احتساب الصف مرتين.
-- إضافة File Health Score.
-- عرض أكثر 3 تحذيرات تكرارًا لكل ملف.
-- تحسين شاشة Review وتمييز Error عن Warning.
-- ترقية PostgreSQL تلقائيًا دون حذف البيانات.
+هذه حزمة Flat Ready. ارفع كل الملفات إلى جذر GitHub واستبدل الملفات القديمة.
 
-## الرفع
-1. فك الضغط.
-2. ارفع كل الملفات إلى جذر GitHub واستبدل الملفات السابقة.
-3. Commit message: `Deploy AEC v1.2.3 file health fix`
-4. تحقق من `/api/health` وأن الإصدار `1.2.3`.
+## الجديد
+- AI Agent Center مع تشغيل محلي آمن، واتصال OpenAI اختياري من Railway Variables.
+- إنشاء Drafts من أوامر عربية أو إنجليزية.
+- تحليل الملفات والمنتجات والتحذيرات.
+- لا يستطيع الـAI اعتماد أو نشر أي منتج.
+- أدوار موسعة: Viewer, Analyst, Creator, Listing Specialist, Reviewer, Operations Manager, Publisher, Admin.
+- كل إصلاحات Amazon Parser وFile Health وVariation Theme approvals.
+- يحافظ على PostgreSQL والبيانات الحالية.
+
+## متغيرات AI الاختيارية في Railway
+OPENAI_API_KEY
+OPENAI_MODEL=gpt-5-mini
+AI_AGENT_ENABLED=true
+AI_AGENT_PUBLISH_DISABLED=true
+
+لا تضع المفتاح في GitHub أو المحادثة. بدون المفتاح يعمل Local Safe Agent.
+
+## Commit message
+Deploy AEC v1.3.0 consolidated AI agent
