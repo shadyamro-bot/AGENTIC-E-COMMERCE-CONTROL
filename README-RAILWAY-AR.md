@@ -1,19 +1,25 @@
-# AEC Railway v1.2.1 — Amazon Template Parser Fix
+# AEC Railway v1.2.2 — Amazon Template Parser Fix
 
-إصدار مسطح جاهز للرفع إلى جذر GitHub دون إنشاء مجلدات.
+هذه الحزمة مسطحة وجاهزة للرفع مباشرة إلى جذر GitHub.
 
-## التحسينات
-- اكتشاف أفضل Sheet داخل ملف Amazon تلقائيًا.
-- اكتشاف Header Row الحقيقي ضمن أول 35 صفًا.
-- تجاهل صفوف التعليمات والصفوف الفارغة.
-- الاحتفاظ برقم صف Excel الحقيقي في نتائج الأخطاء.
-- فصل Parent عن Child ومتطلبات كل نوع.
-- الصورة والسعر الناقصان في Child تحذيرات، وليس رفضًا تلقائيًا.
-- أخطاء SKU واللون والمقاس وعلاقة Parent تعتبر Blocking.
-- عرض Parent Rows وChild Rows وWarnings وBlocked.
-- دعم Processing Summary وTransactions بصورة أفضل.
-- قاعدة البيانات تترقى تلقائيًا دون حذف الملفات السابقة.
+## ما تم إصلاحه
+- اعتماد صف العناوين في قالب Amazon من Row 4.
+- تجاهل صف الحقول التقنية Row 5 وصف المثال Row 6.
+- بدء تحليل المنتجات من Row 7.
+- التعرف على `Parentage Level` وتصنيف Parent وChild بصورة صحيحة.
+- عدم طلب اللون أو المقاس أو السعر من صف Parent.
+- قراءة السعر من `Your Price EGP (Sell on Amazon, EG)`.
+- قراءة اللون من `Color Map` أو `Color`.
+- قراءة المقاس من `Size` أو `Footwear Size`.
+- عرض Sheet وHeader Row وData Start Row وعدد Parent وChild.
+- عرض نوع الصف داخل تفاصيل المشكلات.
 
 ## الرفع
-ارفع كل محتويات هذا المجلد إلى جذر GitHub ثم استخدم Commit:
-`Deploy AEC v1.2.1 Amazon parser fix`
+1. فك الضغط.
+2. ارفع كل الملفات الموجودة داخل المجلد إلى جذر GitHub.
+3. Commit message:
+   `Deploy AEC v1.2.2 parser fix`
+4. Railway سيعمل Deploy تلقائيًا.
+5. تحقق من `/api/health` وأن الإصدار `1.2.2`.
+
+لا تغيّر `DATABASE_URL` أو إعدادات PostgreSQL أو `npm start`.

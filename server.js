@@ -14,7 +14,7 @@ const port = Number(process.env.PORT || 3000);
 const publicDir = __dirname;
 const simulationMode = String(process.env.SIMULATION_MODE || 'true').toLowerCase() !== 'false';
 const emergencyLock = String(process.env.EMERGENCY_LOCK || 'true').toLowerCase() !== 'false';
-const VERSION = '1.2.1';
+const VERSION = '1.2.2';
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } });
 
 app.use(helmet({ contentSecurityPolicy: false }));

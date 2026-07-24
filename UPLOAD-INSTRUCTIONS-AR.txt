@@ -1,12 +1,4 @@
-AEC v1.2.1 — ملف جاهز للرفع مباشرة إلى GitHub
-
-1) فك الضغط.
-2) GitHub > Add file > Upload files.
-3) ارفع كل الملفات الموجودة داخل هذا المجلد مرة واحدة إلى جذر المستودع.
-4) وافق على استبدال الملفات القديمة.
-5) Commit message:
-   Deploy AEC v1.2.1 Amazon parser fix
-6) Railway Start Command يبقى: npm start
-7) بعد النشر افتح /api/health وتأكد أن version = 1.2.1
-
-لا تنشئ src أو public. هذه حزمة FLAT جاهزة.
+ارفع جميع الملفات الموجودة داخل هذا المجلد إلى جذر GitHub مباشرة.
+Commit message: Deploy AEC v1.2.2 parser fix
+Railway Start Command: npm start
+Root Directory: فارغ

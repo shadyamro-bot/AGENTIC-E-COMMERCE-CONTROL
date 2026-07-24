@@ -3,14 +3,14 @@
 const FIELD_ALIASES = {
   sku: ['seller_sku','item_sku','sku','merchant_sku','contribution_sku'],
   parentSku: ['parent_sku','parent_sku_value','parent_sku_id'],
-  parentage: ['parentage','parent_child','parent_child_relationship','parent_child_relationship_type'],
+  parentage: ['parentage','parentage_level','parent_child','parent_child_relationship','parent_child_relationship_type'],
   relationship: ['relationship_type','relationship'],
   variationTheme: ['variation_theme','variationtheme'],
   title: ['item_name','product_name','title','item_title'],
   color: ['color_name','color','colour_name','colour'],
   colorMap: ['color_map','colour_map'],
   size: ['size_name','size','shoe_size','footwear_size','size_value'],
-  price: ['standard_price','price','list_price','sale_price','our_price'],
+  price: ['standard_price','price','list_price','sale_price','our_price','your_price','your_price_egp_sell_on_amazon_eg','purchasable_offer'],
   quantity: ['quantity','fulfillment_center_id','merchant_shipping_group_name'],
   mainImage: ['main_image_url','main_image','image_url','image1','main_image_location'],
   productType: ['product_type','feed_product_type','item_type_keyword'],
@@ -110,7 +110,7 @@ function classifyListingRow(canonical, rowNumber, seen) {
   return { row: rowNumber, sku: sku || null, parentSku: parentSku || null, rowType: isParent ? 'PARENT' : (isChild ? 'CHILD' : 'UNKNOWN'), issues };
 }
 
-function analyzeListing(matrix, headerIndex) {
+function analyzeListing(matrix, headerIndex, options = {}) {
   const headers = matrix[headerIndex] || [];
   const seen = new Set();
   const results = [];
@@ -122,7 +122,10 @@ function analyzeListing(matrix, headerIndex) {
   let blockedRows = 0;
   const sampleRows = [];
 
-  for (let i = headerIndex + 1; i < matrix.length; i++) {
+  const requestedStartRow = Number(options.dataStartRow || 0);
+  const firstDataIndex = requestedStartRow > 0 ? Math.max(headerIndex + 1, requestedStartRow - 1) : headerIndex + 1;
+
+  for (let i = firstDataIndex; i < matrix.length; i++) {
     const values = matrix[i] || [];
     const { canonical, raw } = mapRow(headers, values);
     const hasProductSignal = ['sku','parentSku','parentage','title','color','size','price'].some(f => nonEmpty(canonical[f]));
@@ -189,13 +192,18 @@ function analyzeWorkbook(workbook, XLSX, fileType='LISTING') {
   let analysis;
   if (fileType === 'PROCESSING_SUMMARY') analysis = analyzeProcessingSummary(detected.matrix, detected.headerIndex);
   else if (fileType === 'TRANSACTIONS') analysis = analyzeTransactions(detected.matrix, detected.headerIndex);
-  else analysis = analyzeListing(detected.matrix, detected.headerIndex);
+  else {
+    // Amazon Egypt category templates use row 4 for user-facing headers,
+    // row 5 for internal attribute names, row 6 for examples, and real data from row 7.
+    const isAmazonTemplate = /template/i.test(detected.sheetName) && detected.headerIndex <= 4;
+    analysis = analyzeListing(detected.matrix, detected.headerIndex, { dataStartRow: isAmazonTemplate ? 7 : 0 });
+  }
   return {
     ...analysis,
     sheetName: detected.sheetName,
     headerRow: detected.headerIndex + 1,
     matchedFields: detected.matched,
-    analysisVersion: '1.2.1'
+    analysisVersion: '1.2.2'
   };
 }
 
