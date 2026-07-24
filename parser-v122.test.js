@@ -23,5 +23,5 @@ assert.equal(result.parentRows,1);
 assert.equal(result.childRows,2);
 assert.equal(result.blockedRows,0);
 assert.equal(result.accepted,3);
-assert.equal(result.analysisVersion,'1.3.0');
-console.log('AEC parser v1.3.0 test passed');
+assert.equal(result.analysisVersion,'1.4.0');
+console.log('AEC parser v1.4.0 test passed');

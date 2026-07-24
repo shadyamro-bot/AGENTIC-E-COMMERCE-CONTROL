@@ -230,7 +230,7 @@ function analyzeWorkbook(workbook, XLSX, fileType='LISTING') {
     sheetName: detected.sheetName,
     headerRow: detected.headerIndex + 1,
     matchedFields: detected.matched,
-    analysisVersion: '1.3.0'
+    analysisVersion: '1.4.0'
   };
 }
 

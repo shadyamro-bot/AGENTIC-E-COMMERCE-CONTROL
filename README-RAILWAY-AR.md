@@ -1,23 +1,29 @@
-# AEC Railway v1.3.0 — Consolidated Stable + AI Agent
+# AEC v1.4.0 Stable — Railway
 
-هذه حزمة Flat Ready. ارفع كل الملفات إلى جذر GitHub واستبدل الملفات القديمة.
+هذا إصدار موحد للاستقرار، وليس تحديثًا جزئيًا.
 
-## الجديد
-- AI Agent Center مع تشغيل محلي آمن، واتصال OpenAI اختياري من Railway Variables.
-- إنشاء Drafts من أوامر عربية أو إنجليزية.
-- تحليل الملفات والمنتجات والتحذيرات.
-- لا يستطيع الـAI اعتماد أو نشر أي منتج.
-- أدوار موسعة: Viewer, Analyst, Creator, Listing Specialist, Reviewer, Operations Manager, Publisher, Admin.
-- كل إصلاحات Amazon Parser وFile Health وVariation Theme approvals.
-- يحافظ على PostgreSQL والبيانات الحالية.
+## أهم ما تم إصلاحه
+- توحيد الصلاحيات باستخدام Capability Matrix.
+- حفظ ملف Amazon الأصلي داخل PostgreSQL لإعادة التحليل والتصدير.
+- إعادة تحليل ملف واحد أو جميع الملفات المحفوظة.
+- تصدير Excel مصحح بعد اعتماد الـPatches.
+- Diagnostics وSystem Self-Test داخل الواجهة.
+- تحسين AI Agent للأوامر متعددة الرسائل، إعادة التحليل، وتجهيز موافقات Variation Theme.
+- عدم إعادة الملف الثنائي الكبير داخل JSON عند فتح Review.
+- الحفاظ على Simulation Mode وEmergency Lock.
 
-## متغيرات AI الاختيارية في Railway
-OPENAI_API_KEY
-OPENAI_MODEL=gpt-5-mini
-AI_AGENT_ENABLED=true
-AI_AGENT_PUBLISH_DISABLED=true
+## الرفع
+1. فك الضغط.
+2. ارفع كل الملفات الموجودة داخل المجلد إلى جذر GitHub.
+3. Commit message: `Deploy AEC v1.4.0 stable release`
+4. Railway سيعمل Deploy تلقائيًا.
 
-لا تضع المفتاح في GitHub أو المحادثة. بدون المفتاح يعمل Local Safe Agent.
+## التحقق
+افتح `/api/health` وتأكد من `version: 1.4.0`.
+ثم افتح صفحة Diagnostics وشغّل System Self-Test.
 
-## Commit message
-Deploy AEC v1.3.0 consolidated AI agent
+## ملاحظة للملفات القديمة
+الملفات التي رُفعت قبل v1.4 لم يتم حفظ Binary الخاص بها. ارفع كل ملف قديم مرة واحدة فقط، وسيتم تحديث السجل القديم بدل إنشاء Duplicate، وبعدها تعمل Re-analyze وExport corrected.
+
+## الأمان
+لا تضف Amazon أو OpenAI أو WhatsApp secrets إلى GitHub. استخدم Railway Variables فقط.
