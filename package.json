@@ -1,12 +1,12 @@
 {
   "name": "aec-railway-unified-flat",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
-  "description": "AGENTIC E-COMMERCE CONTROL - Railway flat upload package v1.2",
+  "description": "AGENTIC E-COMMERCE CONTROL - Railway flat upload package v1.2.1 Amazon parser fix",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check db.js && node --check parser.js"
+    "check": "node --check server.js && node --check db.js && node --check parser.js && node --check amazonTemplateParser.js"
   },
   "engines": {
     "node": ">=20"

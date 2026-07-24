@@ -67,7 +67,8 @@ async function initDb() {
     ['products', 'weight_grams NUMERIC(12,2)'], ['products', 'length_cm NUMERIC(12,2)'], ['products', 'width_cm NUMERIC(12,2)'], ['products', 'height_cm NUMERIC(12,2)'],
     ['products', "validation_issues JSONB NOT NULL DEFAULT '[]'::jsonb"],
     ['variants', "image_urls JSONB NOT NULL DEFAULT '[]'::jsonb"], ['variants', 'updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()'],
-    ['approvals', "before_value JSONB NOT NULL DEFAULT '{}'::jsonb"], ['approvals', "proposed_value JSONB NOT NULL DEFAULT '{}'::jsonb"], ['approvals', "risk_level TEXT NOT NULL DEFAULT 'MEDIUM'"]
+    ['approvals', "before_value JSONB NOT NULL DEFAULT '{}'::jsonb"], ['approvals', "proposed_value JSONB NOT NULL DEFAULT '{}'::jsonb"], ['approvals', "risk_level TEXT NOT NULL DEFAULT 'MEDIUM'"],
+    ['uploaded_files', 'header_row INTEGER'], ['uploaded_files', 'data_start_row INTEGER'], ['uploaded_files', 'parent_rows INTEGER NOT NULL DEFAULT 0'], ['uploaded_files', 'child_rows INTEGER NOT NULL DEFAULT 0'], ['uploaded_files', 'warning_rows INTEGER NOT NULL DEFAULT 0'], ['uploaded_files', "analysis_version TEXT NOT NULL DEFAULT '1.2.0'"]
   ]) await addColumn(table, definition);
   const count = await query('SELECT COUNT(*)::int AS count FROM users');
   if (count.rows[0].count === 0) {

@@ -1,50 +1,19 @@
-# AEC Railway Unified v1.2
+# AEC Railway v1.2.1 — Amazon Template Parser Fix
 
-## الجديد
+إصدار مسطح جاهز للرفع إلى جذر GitHub دون إنشاء مجلدات.
 
-- File Center حقيقي لرفع وتحليل XLSX وXLSM وXLS وCSV.
-- حفظ بيانات الملف ونتيجة الفحص في PostgreSQL، مع عدم الاحتفاظ بالملف الثنائي على قرص Railway المؤقت.
-- اكتشاف الملف المكرر باستخدام SHA-256.
-- فحص مبدئي لملفات Listing وProcessing Summary وTransactions.
-- Image Manager لإضافة روابط الصور لكل Child SKU.
-- Notifications محفوظة في PostgreSQL.
-- صفحة WhatsApp وn8n مع اختبار Simulation آمن.
-- Amazon Connection Wizard يعرض جاهزية الربط دون كشف الأسرار.
-- ترقية تلقائية لقاعدة البيانات دون حذف المنتجات أو الموافقات الحالية.
+## التحسينات
+- اكتشاف أفضل Sheet داخل ملف Amazon تلقائيًا.
+- اكتشاف Header Row الحقيقي ضمن أول 35 صفًا.
+- تجاهل صفوف التعليمات والصفوف الفارغة.
+- الاحتفاظ برقم صف Excel الحقيقي في نتائج الأخطاء.
+- فصل Parent عن Child ومتطلبات كل نوع.
+- الصورة والسعر الناقصان في Child تحذيرات، وليس رفضًا تلقائيًا.
+- أخطاء SKU واللون والمقاس وعلاقة Parent تعتبر Blocking.
+- عرض Parent Rows وChild Rows وWarnings وBlocked.
+- دعم Processing Summary وTransactions بصورة أفضل.
+- قاعدة البيانات تترقى تلقائيًا دون حذف الملفات السابقة.
 
-## الرفع إلى GitHub
-
-ارفع محتويات المجلد إلى جذر Repository مع الحفاظ على:
-
-```text
-package.json
-src/server.js
-src/db.js
-src/parser.js
-public/index.html
-public/app.js
-public/styles.css
-```
-
-Commit message:
-
-```text
-Deploy AEC Railway Unified v1.2
-```
-
-Railway سيبدأ النشر تلقائيًا. بعد النجاح افتح:
-
-```text
-https://agentic-e-commerce-control-production.up.railway.app/api/health
-```
-
-يجب أن تكون النسخة `1.2.0`.
-
-## الأمان
-
-لا تضف بيانات Amazon أو WhatsApp إلى GitHub. توضع لاحقًا في Railway Variables فقط. يظل:
-
-```text
-SIMULATION_MODE=true
-EMERGENCY_LOCK=true
-```
+## الرفع
+ارفع كل محتويات هذا المجلد إلى جذر GitHub ثم استخدم Commit:
+`Deploy AEC v1.2.1 Amazon parser fix`

@@ -7,13 +7,14 @@ const XLSX = require('xlsx');
 const crypto = require('crypto');
 const { query, initDb, pool } = require('./db');
 const { parseCommand } = require('./parser');
+const { analyzeWorkbook } = require('./amazonTemplateParser');
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
 const publicDir = __dirname;
 const simulationMode = String(process.env.SIMULATION_MODE || 'true').toLowerCase() !== 'false';
 const emergencyLock = String(process.env.EMERGENCY_LOCK || 'true').toLowerCase() !== 'false';
-const VERSION = '1.2.0';
+const VERSION = '1.2.1';
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } });
 
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -131,39 +132,6 @@ app.post('/api/approvals/:id/decision', requireRole('REVIEWER','ADMIN'), asyncRo
 }));
 app.post('/api/products/:id/publish', requireRole('PUBLISHER','ADMIN'), asyncRoute(async (_req,res)=>{ if(emergencyLock)return res.status(423).json({error:'Emergency Lock is active'}); if(simulationMode)return res.status(423).json({error:'Simulation Mode is active'}); return res.status(501).json({error:'Amazon live publishing is not enabled in this release'}); }));
 
-function normalizeHeader(value) { return String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, ''); }
-function analyzeRows(rows, fileType) {
-  const issues = []; let accepted = 0; let rejected = 0;
-  const skuKeys = ['seller_sku','sku','item_sku','merchant_sku'];
-  const parentKeys = ['parent_sku','parentage','relationship_type'];
-  const colorKeys = ['color','color_name','colour'];
-  const sizeKeys = ['size','size_name','shoe_size'];
-  const priceKeys = ['price','standard_price','sale_price'];
-  const imageKeys = ['main_image_url','image_url','main_image','image1'];
-  const seen = new Set();
-  rows.forEach((row, index) => {
-    const normalized = {}; Object.entries(row || {}).forEach(([k,v]) => normalized[normalizeHeader(k)] = v);
-    const rowIssues = [];
-    const sku = skuKeys.map(k=>normalized[k]).find(v=>String(v||'').trim());
-    if (fileType === 'LISTING') {
-      if (!sku) rowIssues.push('Missing SKU');
-      if (sku && seen.has(String(sku))) rowIssues.push('Duplicate SKU');
-      if (sku) seen.add(String(sku));
-      const price = priceKeys.map(k=>normalized[k]).find(v=>v!==undefined && v!=='');
-      if (price !== undefined && price !== '' && (!Number.isFinite(Number(price)) || Number(price) <= 0)) rowIssues.push('Invalid price');
-      const isParent = String(normalized.parentage || normalized.relationship_type || '').toLowerCase().includes('parent');
-      if (!isParent && !colorKeys.some(k=>String(normalized[k]||'').trim())) rowIssues.push('Missing color');
-      if (!isParent && !sizeKeys.some(k=>String(normalized[k]||'').trim())) rowIssues.push('Missing size');
-      if (!isParent && !imageKeys.some(k=>String(normalized[k]||'').trim())) rowIssues.push('Missing main image');
-      if (!isParent && !parentKeys.some(k=>String(normalized[k]||'').trim())) rowIssues.push('Parent relationship not detected');
-    } else if (fileType === 'TRANSACTIONS') {
-      const amount = normalized.total || normalized.amount || normalized.product_sales || normalized.net_proceeds;
-      if (amount !== undefined && amount !== '' && !Number.isFinite(Number(String(amount).replace(/,/g,'')))) rowIssues.push('Invalid transaction amount');
-    }
-    if (rowIssues.length) { rejected += 1; issues.push({ row: index + 2, sku: sku || null, messages: rowIssues }); } else accepted += 1;
-  });
-  return { accepted, rejected, issues: issues.slice(0,200) };
-}
 app.post('/api/files/upload', requireRole('CREATOR','ADMIN'), upload.single('file'), asyncRoute(async (req,res)=>{
   if (!req.file) return res.status(400).json({error:'File is required'});
   const ext = (req.file.originalname.split('.').pop() || '').toLowerCase();
@@ -174,18 +142,15 @@ app.post('/api/files/upload', requireRole('CREATOR','ADMIN'), upload.single('fil
   const duplicate = await query('SELECT id,original_name,created_at FROM uploaded_files WHERE sha256=$1',[hash]);
   if (duplicate.rowCount) return res.status(409).json({error:'This exact file was already uploaded',duplicate:duplicate.rows[0]});
   const workbook = XLSX.read(req.file.buffer,{type:'buffer',cellDates:true,bookVBA:ext==='xlsm'});
-  const sheetName = workbook.SheetNames[0]; if (!sheetName) return res.status(422).json({error:'Workbook has no sheets'});
-  const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName],{defval:'',raw:false});
-  const headers = rows.length ? Object.keys(rows[0]) : [];
-  const analysis = analyzeRows(rows,fileType);
-  const inserted = await query(`INSERT INTO uploaded_files(original_name,file_type,mime_type,size_bytes,sha256,sheet_name,row_count,accepted_rows,rejected_rows,headers,issues,sample_rows,uploaded_by) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,[
-    req.file.originalname,fileType,req.file.mimetype,req.file.size,hash,sheetName,rows.length,analysis.accepted,analysis.rejected,JSON.stringify(headers),JSON.stringify(analysis.issues),JSON.stringify(rows.slice(0,25)),actor(req)
+  const analysis = analyzeWorkbook(workbook, XLSX, fileType);
+  const inserted = await query(`INSERT INTO uploaded_files(original_name,file_type,mime_type,size_bytes,sha256,sheet_name,row_count,accepted_rows,rejected_rows,headers,issues,sample_rows,uploaded_by,header_row,data_start_row,parent_rows,child_rows,warning_rows,analysis_version) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING *`,[
+    req.file.originalname,fileType,req.file.mimetype,req.file.size,hash,analysis.sheetName,analysis.totalRows,analysis.accepted,analysis.blockedRows,JSON.stringify(analysis.headers),JSON.stringify(analysis.issues),JSON.stringify(analysis.sampleRows),actor(req),analysis.headerRow,analysis.dataStartRow,analysis.parentRows,analysis.childRows,analysis.warningRows,analysis.analysisVersion
   ]);
-  await query(`INSERT INTO notifications(type,title,message,entity_type,entity_id) VALUES($1,'File processed',$2,'FILE',$3)`,[analysis.rejected?'WARNING':'SUCCESS',`${req.file.originalname}: ${analysis.accepted} accepted, ${analysis.rejected} flagged`,String(inserted.rows[0].id)]);
-  await audit(actor(req),'FILE_UPLOADED','FILE',inserted.rows[0].id,{name:req.file.originalname,fileType,rows:rows.length,rejected:analysis.rejected});
+  await query(`INSERT INTO notifications(type,title,message,entity_type,entity_id) VALUES($1,'File processed',$2,'FILE',$3)`,[analysis.blockedRows?'WARNING':'SUCCESS',`${req.file.originalname}: ${analysis.accepted} accepted, ${analysis.warningRows} warnings, ${analysis.blockedRows} blocked`,String(inserted.rows[0].id)]);
+  await audit(actor(req),'FILE_UPLOADED','FILE',inserted.rows[0].id,{name:req.file.originalname,fileType,sheet:analysis.sheetName,headerRow:analysis.headerRow,rows:analysis.totalRows,warnings:analysis.warningRows,blocked:analysis.blockedRows,analysisVersion:analysis.analysisVersion});
   res.status(201).json(inserted.rows[0]);
 }));
-app.get('/api/files', asyncRoute(async (_req,res)=>res.json((await query('SELECT id,original_name,file_type,size_bytes,status,sheet_name,row_count,accepted_rows,rejected_rows,uploaded_by,created_at FROM uploaded_files ORDER BY created_at DESC')).rows)));
+app.get('/api/files', asyncRoute(async (_req,res)=>res.json((await query('SELECT id,original_name,file_type,size_bytes,status,sheet_name,row_count,accepted_rows,rejected_rows,warning_rows,parent_rows,child_rows,header_row,data_start_row,analysis_version,uploaded_by,created_at FROM uploaded_files ORDER BY created_at DESC')).rows)));
 app.get('/api/files/:id', asyncRoute(async (req,res)=>{const r=await query('SELECT * FROM uploaded_files WHERE id=$1',[req.params.id]);if(!r.rowCount)return res.status(404).json({error:'File not found'});res.json(r.rows[0]);}));
 app.get('/api/notifications', asyncRoute(async (req,res)=>{const onlyUnread=String(req.query.unread||'')==='true';res.json((await query(`SELECT * FROM notifications ${onlyUnread?'WHERE read_at IS NULL':''} ORDER BY created_at DESC LIMIT 100`)).rows)}));
 app.post('/api/notifications/:id/read', asyncRoute(async (req,res)=>{await query('UPDATE notifications SET read_at=COALESCE(read_at,NOW()) WHERE id=$1',[req.params.id]);res.json({ok:true});}));

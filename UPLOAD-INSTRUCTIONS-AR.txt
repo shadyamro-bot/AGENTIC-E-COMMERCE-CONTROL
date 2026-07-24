@@ -1,13 +1,12 @@
-AEC Railway v1.2 - نسخة مسطحة جاهزة للرفع
+AEC v1.2.1 — ملف جاهز للرفع مباشرة إلى GitHub
 
-1) افتح GitHub Repository.
-2) Add file > Upload files.
-3) فك ضغط هذا الملف.
-4) ارفع كل الملفات الموجودة بداخله مرة واحدة إلى جذر Repository.
-5) وافق على Replace للملفات المتشابهة.
-6) Commit message: Deploy AEC v1.2 flat ready package
-7) لا تنشئ مجلد src أو public، ولا تنقل أي ملف يدويًا.
-8) في Railway اجعل Start Command: npm start
-9) Root Directory فارغ.
+1) فك الضغط.
+2) GitHub > Add file > Upload files.
+3) ارفع كل الملفات الموجودة داخل هذا المجلد مرة واحدة إلى جذر المستودع.
+4) وافق على استبدال الملفات القديمة.
+5) Commit message:
+   Deploy AEC v1.2.1 Amazon parser fix
+6) Railway Start Command يبقى: npm start
+7) بعد النشر افتح /api/health وتأكد أن version = 1.2.1
 
-هذه النسخة تشغل server.js من جذر المشروع، لذلك لا تتأثر بالمجلدات القديمة الموجودة في GitHub.
+لا تنشئ src أو public. هذه حزمة FLAT جاهزة.
