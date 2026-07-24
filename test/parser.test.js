@@ -1,0 +1,3 @@
+const test=require('node:test');const assert=require('node:assert/strict');const {parseCommand}=require('../src/parser');
+test('parses 3 colors and 5 sizes',()=>{const p=parseCommand("Create SKU CK1 men's shoes, colors Black Grey White, sizes from 41 to 45, price 499 EGP, origin Egypt, FBA");assert.equal(p.parentSku,'CK1');assert.equal(p.variants.length,15);assert.equal(p.price,499);assert.equal(p.errors.length,0)});
+test('parses Arabic colors',()=>{const p=parseCommand('اعمل منتج S60 الوان أسود رمادي أبيض مقاسات من 41 إلى 45 السعر 499 مصر FBA');assert.equal(p.parentSku,'S60');assert.equal(p.variants.length,15)});
