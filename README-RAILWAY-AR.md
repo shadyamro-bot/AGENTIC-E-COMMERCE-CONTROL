@@ -1,35 +1,50 @@
-# AEC Railway Unified v1.1
+# AEC Railway Unified v1.2
 
 ## الجديد
-- واجهة احترافية محسنة ومتجاوبة.
-- اختيار المستخدم والدور من أعلى الواجهة.
-- صلاحيات Creator / Reviewer / Publisher / Admin على API.
-- صفحة تفاصيل المنتج والـVariants.
-- Product Editor يحفظ التعديلات في PostgreSQL.
-- كل تعديل ينشئ Approval جديد مع Before / Proposed values.
-- Validation Issues محفوظة في قاعدة البيانات.
-- Dashboard أكثر وضوحًا وسجل نشاط حديث.
-- بحث في المنتجات.
-- ترقية قاعدة البيانات تلقائيًا بدون حذف البيانات الحالية.
 
-## الرفع على GitHub
-ارفع محتويات الحزمة في جذر المستودع مع الحفاظ على:
+- File Center حقيقي لرفع وتحليل XLSX وXLSM وXLS وCSV.
+- حفظ بيانات الملف ونتيجة الفحص في PostgreSQL، مع عدم الاحتفاظ بالملف الثنائي على قرص Railway المؤقت.
+- اكتشاف الملف المكرر باستخدام SHA-256.
+- فحص مبدئي لملفات Listing وProcessing Summary وTransactions.
+- Image Manager لإضافة روابط الصور لكل Child SKU.
+- Notifications محفوظة في PostgreSQL.
+- صفحة WhatsApp وn8n مع اختبار Simulation آمن.
+- Amazon Connection Wizard يعرض جاهزية الربط دون كشف الأسرار.
+- ترقية تلقائية لقاعدة البيانات دون حذف المنتجات أو الموافقات الحالية.
 
-```
+## الرفع إلى GitHub
+
+ارفع محتويات المجلد إلى جذر Repository مع الحفاظ على:
+
+```text
+package.json
 src/server.js
 src/db.js
 src/parser.js
 public/index.html
 public/app.js
 public/styles.css
-package.json
 ```
 
-Railway سيعمل Deploy تلقائيًا. لا تغيّر:
+Commit message:
 
-```
-Start Command: npm start
-Root Directory: فارغ
+```text
+Deploy AEC Railway Unified v1.2
 ```
 
-لا تضف بيانات Amazon السرية حتى الآن. النشر الحقيقي يظل مقفولًا.
+Railway سيبدأ النشر تلقائيًا. بعد النجاح افتح:
+
+```text
+https://agentic-e-commerce-control-production.up.railway.app/api/health
+```
+
+يجب أن تكون النسخة `1.2.0`.
+
+## الأمان
+
+لا تضف بيانات Amazon أو WhatsApp إلى GitHub. توضع لاحقًا في Railway Variables فقط. يظل:
+
+```text
+SIMULATION_MODE=true
+EMERGENCY_LOCK=true
+```

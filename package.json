@@ -1,8 +1,8 @@
 {
   "name": "aec-railway-unified",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
-  "description": "AGENTIC E-COMMERCE CONTROL - Railway unified app v1.1",
+  "description": "AGENTIC E-COMMERCE CONTROL - Railway unified app v1.2",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
@@ -15,6 +15,8 @@
   "dependencies": {
     "express": "^4.21.2",
     "helmet": "^8.1.0",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "multer": "^1.4.5-lts.1",
+    "xlsx": "^0.18.5"
   }
 }
