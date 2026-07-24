@@ -1,13 +1,12 @@
 {
-  "name": "aec-railway-unified",
+  "name": "aec-railway-unified-flat",
   "version": "1.2.0",
   "private": true,
-  "description": "AGENTIC E-COMMERCE CONTROL - Railway unified app v1.2",
-  "main": "src/server.js",
+  "description": "AGENTIC E-COMMERCE CONTROL - Railway flat upload package v1.2",
+  "main": "server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "check": "node --check src/server.js && node --check src/db.js && node --check src/parser.js",
-    "test": "node --test test/*.test.js"
+    "start": "node server.js",
+    "check": "node --check server.js && node --check db.js && node --check parser.js"
   },
   "engines": {
     "node": ">=20"

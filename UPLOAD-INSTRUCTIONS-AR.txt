@@ -1,0 +1,13 @@
+AEC Railway v1.2 - نسخة مسطحة جاهزة للرفع
+
+1) افتح GitHub Repository.
+2) Add file > Upload files.
+3) فك ضغط هذا الملف.
+4) ارفع كل الملفات الموجودة بداخله مرة واحدة إلى جذر Repository.
+5) وافق على Replace للملفات المتشابهة.
+6) Commit message: Deploy AEC v1.2 flat ready package
+7) لا تنشئ مجلد src أو public، ولا تنقل أي ملف يدويًا.
+8) في Railway اجعل Start Command: npm start
+9) Root Directory فارغ.
+
+هذه النسخة تشغل server.js من جذر المشروع، لذلك لا تتأثر بالمجلدات القديمة الموجودة في GitHub.
