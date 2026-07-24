@@ -117,9 +117,10 @@ function analyzeListing(matrix, headerIndex, options = {}) {
   let dataStartRow = null;
   let parentRows = 0;
   let childRows = 0;
-  let accepted = 0;
+  let validRows = 0;
   let warningRows = 0;
   let blockedRows = 0;
+  let ignoredRows = 0;
   const sampleRows = [];
 
   const requestedStartRow = Number(options.dataStartRow || 0);
@@ -129,7 +130,7 @@ function analyzeListing(matrix, headerIndex, options = {}) {
     const values = matrix[i] || [];
     const { canonical, raw } = mapRow(headers, values);
     const hasProductSignal = ['sku','parentSku','parentage','title','color','size','price'].some(f => nonEmpty(canonical[f]));
-    if (!hasProductSignal) continue;
+    if (!hasProductSignal) { if (values.some(nonEmpty)) ignoredRows++; continue; }
     if (dataStartRow == null) dataStartRow = i + 1;
     const result = classifyListingRow(canonical, i + 1, seen);
     results.push(result);
@@ -138,18 +139,25 @@ function analyzeListing(matrix, headerIndex, options = {}) {
     const hasError = result.issues.some(x => x.severity === 'ERROR');
     const hasWarning = result.issues.some(x => x.severity === 'WARNING');
     if (hasError) blockedRows++;
-    else { accepted++; if (hasWarning) warningRows++; }
+    else if (hasWarning) warningRows++;
+    else validRows++;
     if (sampleRows.length < 25) sampleRows.push({ excelRow: i + 1, rowType: result.rowType, ...raw });
   }
 
-  return { headers: headers.map(String), dataStartRow: dataStartRow || headerIndex + 2, parentRows, childRows, accepted, warningRows, blockedRows, issues: results.filter(r => r.issues.length).slice(0,500), sampleRows, totalRows: results.length };
+  const issueRows = results.filter(r => r.issues.length);
+  const warningCounts = new Map();
+  for (const row of issueRows) for (const issue of row.issues.filter(x => x.severity === 'WARNING')) warningCounts.set(issue.message, (warningCounts.get(issue.message) || 0) + 1);
+  const topWarnings = [...warningCounts.entries()].sort((a,b)=>b[1]-a[1]).slice(0,3).map(([message,count])=>({message,count}));
+  const totalRows = results.length;
+  const fileHealth = totalRows ? Math.round(((validRows + warningRows * 0.65) / totalRows) * 100) : 100;
+  return { headers: headers.map(String), dataStartRow: dataStartRow || headerIndex + 2, parentRows, childRows, validRows, accepted: validRows, warningRows, blockedRows, ignoredRows, fileHealth, topWarnings, issues: issueRows.slice(0,500), sampleRows, totalRows };
 }
 
 function analyzeProcessingSummary(matrix, headerIndex) {
   const headers = matrix[headerIndex] || [];
   const issues = [];
   const sampleRows = [];
-  let totalRows = 0, accepted = 0, blockedRows = 0;
+  let totalRows = 0, validRows = 0, blockedRows = 0;
   let dataStartRow = null;
   for (let i = headerIndex + 1; i < matrix.length; i++) {
     const { canonical, raw } = mapRow(headers, matrix[i] || []);
@@ -161,17 +169,18 @@ function analyzeProcessingSummary(matrix, headerIndex) {
     if (nonEmpty(message) || nonEmpty(code)) {
       blockedRows++;
       issues.push({ row:i+1, sku:String(canonical.sku||'').trim()||null, rowType:'PROCESSING_RESULT', issues:[{severity:'ERROR',code:String(code||'AMAZON_REJECTION'),message:String(message||'Amazon processing error'),field:null}] });
-    } else accepted++;
+    } else validRows++;
     if (sampleRows.length < 25) sampleRows.push({ excelRow:i+1, ...raw });
   }
-  return { headers:headers.map(String), dataStartRow:dataStartRow||headerIndex+2, parentRows:0, childRows:0, accepted, warningRows:0, blockedRows, issues, sampleRows, totalRows };
+  const fileHealth = totalRows ? Math.round((validRows / totalRows) * 100) : 100;
+  return { headers:headers.map(String), dataStartRow:dataStartRow||headerIndex+2, parentRows:0, childRows:0, validRows, accepted:validRows, warningRows:0, blockedRows, ignoredRows:0, fileHealth, topWarnings:[], issues, sampleRows, totalRows };
 }
 
 function analyzeTransactions(matrix, headerIndex) {
   const headers = matrix[headerIndex] || [];
   const issues = [];
   const sampleRows = [];
-  let totalRows=0, accepted=0, blockedRows=0, dataStartRow=null;
+  let totalRows=0, validRows=0, blockedRows=0, dataStartRow=null;
   for (let i=headerIndex+1;i<matrix.length;i++) {
     const { canonical, raw } = mapRow(headers,matrix[i]||[]);
     if (!Object.values(raw).some(nonEmpty)) continue;
@@ -180,10 +189,11 @@ function analyzeTransactions(matrix, headerIndex) {
     const amount=canonical.amount;
     const rowIssues=[];
     if (nonEmpty(amount) && !Number.isFinite(Number(String(amount).replace(/[,$\s]/g,'')))) rowIssues.push({severity:'ERROR',code:'INVALID_AMOUNT',message:'Transaction amount is not numeric',field:'amount'});
-    if (rowIssues.length) { blockedRows++; issues.push({row:i+1,sku:null,rowType:'TRANSACTION',issues:rowIssues}); } else accepted++;
+    if (rowIssues.length) { blockedRows++; issues.push({row:i+1,sku:null,rowType:'TRANSACTION',issues:rowIssues}); } else validRows++;
     if(sampleRows.length<25) sampleRows.push({excelRow:i+1,...raw});
   }
-  return {headers:headers.map(String),dataStartRow:dataStartRow||headerIndex+2,parentRows:0,childRows:0,accepted,warningRows:0,blockedRows,issues,sampleRows,totalRows};
+  const fileHealth = totalRows ? Math.round((validRows / totalRows) * 100) : 100;
+  return {headers:headers.map(String),dataStartRow:dataStartRow||headerIndex+2,parentRows:0,childRows:0,validRows,accepted:validRows,warningRows:0,blockedRows,ignoredRows:0,fileHealth,topWarnings:[],issues,sampleRows,totalRows};
 }
 
 function analyzeWorkbook(workbook, XLSX, fileType='LISTING') {

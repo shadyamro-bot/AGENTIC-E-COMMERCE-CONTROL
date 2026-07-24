@@ -14,7 +14,7 @@ const port = Number(process.env.PORT || 3000);
 const publicDir = __dirname;
 const simulationMode = String(process.env.SIMULATION_MODE || 'true').toLowerCase() !== 'false';
 const emergencyLock = String(process.env.EMERGENCY_LOCK || 'true').toLowerCase() !== 'false';
-const VERSION = '1.2.2';
+const VERSION = '1.2.3';
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } });
 
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -143,14 +143,14 @@ app.post('/api/files/upload', requireRole('CREATOR','ADMIN'), upload.single('fil
   if (duplicate.rowCount) return res.status(409).json({error:'This exact file was already uploaded',duplicate:duplicate.rows[0]});
   const workbook = XLSX.read(req.file.buffer,{type:'buffer',cellDates:true,bookVBA:ext==='xlsm'});
   const analysis = analyzeWorkbook(workbook, XLSX, fileType);
-  const inserted = await query(`INSERT INTO uploaded_files(original_name,file_type,mime_type,size_bytes,sha256,sheet_name,row_count,accepted_rows,rejected_rows,headers,issues,sample_rows,uploaded_by,header_row,data_start_row,parent_rows,child_rows,warning_rows,analysis_version) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) RETURNING *`,[
-    req.file.originalname,fileType,req.file.mimetype,req.file.size,hash,analysis.sheetName,analysis.totalRows,analysis.accepted,analysis.blockedRows,JSON.stringify(analysis.headers),JSON.stringify(analysis.issues),JSON.stringify(analysis.sampleRows),actor(req),analysis.headerRow,analysis.dataStartRow,analysis.parentRows,analysis.childRows,analysis.warningRows,analysis.analysisVersion
+  const inserted = await query(`INSERT INTO uploaded_files(original_name,file_type,mime_type,size_bytes,sha256,sheet_name,row_count,accepted_rows,rejected_rows,headers,issues,sample_rows,uploaded_by,header_row,data_start_row,parent_rows,child_rows,warning_rows,valid_rows,ignored_rows,file_health,warning_summary,analysis_version) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *`,[
+    req.file.originalname,fileType,req.file.mimetype,req.file.size,hash,analysis.sheetName,analysis.totalRows,analysis.validRows ?? analysis.accepted,analysis.blockedRows,JSON.stringify(analysis.headers),JSON.stringify(analysis.issues),JSON.stringify(analysis.sampleRows),actor(req),analysis.headerRow,analysis.dataStartRow,analysis.parentRows,analysis.childRows,analysis.warningRows,analysis.validRows ?? analysis.accepted,analysis.ignoredRows || 0,analysis.fileHealth ?? 100,JSON.stringify(analysis.topWarnings || []),'1.2.3'
   ]);
-  await query(`INSERT INTO notifications(type,title,message,entity_type,entity_id) VALUES($1,'File processed',$2,'FILE',$3)`,[analysis.blockedRows?'WARNING':'SUCCESS',`${req.file.originalname}: ${analysis.accepted} accepted, ${analysis.warningRows} warnings, ${analysis.blockedRows} blocked`,String(inserted.rows[0].id)]);
-  await audit(actor(req),'FILE_UPLOADED','FILE',inserted.rows[0].id,{name:req.file.originalname,fileType,sheet:analysis.sheetName,headerRow:analysis.headerRow,rows:analysis.totalRows,warnings:analysis.warningRows,blocked:analysis.blockedRows,analysisVersion:analysis.analysisVersion});
+  await query(`INSERT INTO notifications(type,title,message,entity_type,entity_id) VALUES($1,'File processed',$2,'FILE',$3)`,[analysis.blockedRows?'WARNING':'SUCCESS',`${req.file.originalname}: ${analysis.validRows ?? analysis.accepted} valid, ${analysis.warningRows} accepted with warnings, ${analysis.blockedRows} blocked`,String(inserted.rows[0].id)]);
+  await audit(actor(req),'FILE_UPLOADED','FILE',inserted.rows[0].id,{name:req.file.originalname,fileType,sheet:analysis.sheetName,headerRow:analysis.headerRow,rows:analysis.totalRows,warnings:analysis.warningRows,blocked:analysis.blockedRows,analysisVersion:'1.2.3',health:analysis.fileHealth});
   res.status(201).json(inserted.rows[0]);
 }));
-app.get('/api/files', asyncRoute(async (_req,res)=>res.json((await query('SELECT id,original_name,file_type,size_bytes,status,sheet_name,row_count,accepted_rows,rejected_rows,warning_rows,parent_rows,child_rows,header_row,data_start_row,analysis_version,uploaded_by,created_at FROM uploaded_files ORDER BY created_at DESC')).rows)));
+app.get('/api/files', asyncRoute(async (_req,res)=>res.json((await query('SELECT id,original_name,file_type,size_bytes,status,sheet_name,row_count,accepted_rows,rejected_rows,warning_rows,valid_rows,ignored_rows,file_health,warning_summary,parent_rows,child_rows,header_row,data_start_row,analysis_version,uploaded_by,created_at FROM uploaded_files ORDER BY created_at DESC')).rows)));
 app.get('/api/files/:id', asyncRoute(async (req,res)=>{const r=await query('SELECT * FROM uploaded_files WHERE id=$1',[req.params.id]);if(!r.rowCount)return res.status(404).json({error:'File not found'});res.json(r.rows[0]);}));
 app.get('/api/notifications', asyncRoute(async (req,res)=>{const onlyUnread=String(req.query.unread||'')==='true';res.json((await query(`SELECT * FROM notifications ${onlyUnread?'WHERE read_at IS NULL':''} ORDER BY created_at DESC LIMIT 100`)).rows)}));
 app.post('/api/notifications/:id/read', asyncRoute(async (req,res)=>{await query('UPDATE notifications SET read_at=COALESCE(read_at,NOW()) WHERE id=$1',[req.params.id]);res.json({ok:true});}));
