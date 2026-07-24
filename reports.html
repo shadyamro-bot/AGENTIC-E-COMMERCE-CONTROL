@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b1720" />
+  <title>AEC Demo v1.1 — Reports</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body data-page="reports">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">AE</div>
+        <div><strong>AEC</strong><span>Control center</span></div>
+      </div>
+      <nav id="nav" class="nav">
+        <a class="nav-item" data-view="overview" href="/index.html"><span>⌂</span>Overview</a>
+        <a class="nav-item" data-view="products" href="/products.html"><span>◫</span>Products</a>
+        <a class="nav-item" data-view="command" href="/command.html"><span>AI</span>Command Center</a>
+        <a class="nav-item" data-view="amazon" href="/amazon.html"><span>A</span>Amazon Connect</a>
+        <a class="nav-item" data-view="security" href="/security.html"><span>⚿</span>Security Center</a>
+        <a class="nav-item" data-view="approvals" href="/approvals.html"><span>✓</span>Approvals <b id="navApprovalCount" class="badge">0</b></a>
+        <a class="nav-item" data-view="policies" href="/policies.html"><span>◇</span>Policy Center</a>
+        <a class="nav-item" data-view="orders" href="/orders.html"><span>▤</span>Orders</a>
+        <a class="nav-item" data-view="profit" href="/profit.html"><span>EGP</span>Sales & Profit</a>
+        <a class="nav-item" data-view="files" href="/files.html"><span>⇧</span>File Center</a>
+        <a class="nav-item" data-view="reports" href="/reports.html"><span>▥</span>System Reports</a>
+        <a class="nav-item" data-view="agents" href="/agents.html"><span>✦</span>Agents</a>
+        <a class="nav-item" data-view="whatsapp" href="/whatsapp.html"><span>WA</span>WhatsApp</a>
+        <a class="nav-item" data-view="automation" href="/automation.html"><span>n8n</span>Automation</a>
+        <a class="nav-item" data-view="audit" href="/audit.html"><span>↻</span>Audit Log</a>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="owner-avatar">SH</div>
+        <div><strong>Shady</strong><span>Project owner</span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="marketplace"><span class="dot"></span><strong>AEC</strong><small>Amazon Egypt</small></div>
+        <div class="top-actions">
+          <button class="search-btn" id="commandButton">⌘ K <span>Search</span></button>
+          <span class="mode-pill" id="modePill">Interactive Demo</span>
+          <span id="todayLabel"></span>
+        </div>
+      </header>
+
+      <section id="view-overview" class="view active">
+        <div class="hero-row">
+          <div>
+            <p class="eyebrow">AEC DEMO v1.1 • INTERACTIVE AMAZON CONTROL</p>
+            <h1>Good afternoon, Shady</h1>
+            <p id="overviewSubtitle">Your Amazon Egypt control center is loading.</p>
+          </div>
+          <button class="primary" id="heroUploadButton">Upload Amazon file</button>
+        </div>
+
+        <div class="notice safe">
+          <div><strong>Simulation mode required</strong><span>No live Amazon change is executed before simulation and approval.</span></div>
+          <span class="status-dot"></span>
+        </div>
+
+        <section class="intelligence-card">
+          <div class="intel-icon">✦</div>
+          <div><span>AEC INTELLIGENCE</span><strong id="intelligenceText">Upload an Amazon file to start full-row validation.</strong><p id="recommendationText">The File Agent will fingerprint the file, detect duplicate uploads, validate parent-child structure, and create approval-gated fixes.</p></div>
+          <button class="ghost" data-view-jump="approvals">Review recommendations</button>
+        </section>
+
+        <div class="kpi-grid">
+          <article class="kpi"><span>Listings monitored</span><strong id="kpiListings">0</strong><small>seed listings + uploaded rows</small></article>
+          <article class="kpi"><span>Pending approvals</span><strong id="kpiApprovals">0</strong><small>simulation required first</small></article>
+          <article class="kpi"><span>Listing errors</span><strong id="kpiErrors">0</strong><small>across uploaded files</small></article>
+          <article class="kpi"><span>Files processed</span><strong id="kpiFiles">0</strong><small id="kpiFilesSub">persistent fingerprints</small></article>
+        </div>
+
+        <div class="two-column">
+          <section class="panel upload-panel">
+            <div class="section-head"><div><span class="eyebrow">FILE INTELLIGENCE</span><h2>Upload & validate</h2></div><span class="mini-pill">XLSX • XLSM • CSV</span></div>
+            <form id="uploadForm" class="dropzone">
+              <input id="fileInput" type="file" name="file" accept=".xlsx,.xlsm,.xls,.csv" hidden />
+              <div class="upload-icon">⇧</div>
+              <strong>Drop an Amazon template or processing summary</strong>
+              <span>Every row is inspected. Original files remain unchanged.</span>
+              <button class="secondary" type="button" id="browseButton">Choose file</button>
+            </form>
+            <div id="uploadProgress" class="upload-progress hidden"><div class="spinner"></div><span>Reading workbook and validating every row…</span></div>
+            <div id="uploadResult" class="upload-result hidden"></div>
+          </section>
+
+          <section class="panel">
+            <div class="section-head"><div><span class="eyebrow">LIVE STATUS</span><h2>Agent control</h2></div><button class="text-btn" data-view-jump="agents">Manage all</button></div>
+            <div id="agentList" class="agent-list"></div>
+          </section>
+        </div>
+
+        <div class="two-column lower">
+          <section class="panel">
+            <div class="section-head"><div><span class="eyebrow">SAFE EXECUTION</span><h2>Pending approvals</h2></div><button class="text-btn" data-view-jump="approvals">View all</button></div>
+            <div id="overviewApprovals" class="stack-list"></div>
+          </section>
+          <section class="panel">
+            <div class="section-head"><div><span class="eyebrow">PERSISTENT EVIDENCE</span><h2>File history</h2></div><button class="text-btn" data-view-jump="files">Open files</button></div>
+            <div id="overviewFiles" class="stack-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="view-products" class="view">
+        <div class="page-head"><div><span class="eyebrow">CATALOG CONTROL</span><h1>Products</h1><p>Seed listings and normalized rows read from uploaded Amazon files.</p></div><button class="primary" data-view-jump="files">Upload file</button></div>
+        <section class="panel table-panel"><div class="table-tools"><input id="productSearch" placeholder="Search SKU, title, color, size…" /><span id="productCount">0 products</span></div><div class="table-wrap"><table><thead><tr><th>SKU</th><th>Title</th><th>Parent / Child</th><th>Color</th><th>Size</th><th>Price</th><th>SEO</th><th>Images</th><th>Health</th><th>Source</th></tr></thead><tbody id="productsTable"></tbody></table></div></section>
+      </section>
+
+
+      <section id="view-command" class="view">
+        <div class="page-head"><div><span class="eyebrow">COMMAND-DRIVEN LISTINGS</span><h1>Amazon Command Center</h1><p>Describe the product, generate Parent and Children, validate, approve, then publish safely.</p></div></div>
+        <div class="two-column command-layout">
+          <section class="panel"><div class="section-head"><div><span class="eyebrow">NEW PRODUCT</span><h2>Give AEC an order</h2></div></div>
+            <textarea id="productCommand" class="command-input" placeholder="Example: Create SKU CK1 men's shoes, colors Black Grey White, sizes from 41 to 45, price 499 EGP, origin Egypt, FBA"></textarea>
+            <div class="command-actions"><button id="generateDraft" class="primary">Generate product draft</button><button id="commandExample" class="secondary">Use example</button></div>
+            <p class="safety-note">AEC never publishes directly from a text command. Validation and approval are mandatory.</p>
+          </section>
+          <section class="panel"><div class="section-head"><div><span class="eyebrow">CONTROL GATE</span><h2>Execution stages</h2></div></div>
+            <div class="stage-list"><div><b>1</b><span>Parse command</span></div><div><b>2</b><span>Generate Parent + Children</span></div><div><b>3</b><span>Local compliance validation</span></div><div><b>4</b><span>Amazon VALIDATION_PREVIEW</span></div><div><b>5</b><span>Owner approval</span></div><div><b>6</b><span>Publish to Amazon</span></div></div>
+          </section>
+        </div>
+        <section class="panel table-panel"><div class="section-head padded"><div><span class="eyebrow">PRODUCT DRAFTS</span><h2>Command history</h2></div><span id="draftCount">0 drafts</span></div><div id="draftList" class="draft-grid padded"></div></section>
+      </section>
+
+      <section id="view-amazon" class="view">
+        <div class="page-head"><div><span class="eyebrow">SELLING PARTNER API</span><h1>Amazon Connection</h1><p>Server-side connection status for Amazon Egypt. Secrets are never exposed in the browser.</p></div><button id="testAmazon" class="primary">Test connection</button></div>
+        <div class="connection-grid"><article class="panel connection-card"><span>Status</span><strong id="amazonStatus">Checking…</strong><small id="amazonMode">—</small></article><article class="panel connection-card"><span>Marketplace</span><strong>Amazon Egypt</strong><small id="amazonMarketplace">ARBP9OOSHTCHU</small></article><article class="panel connection-card"><span>Credentials</span><strong id="amazonCredentials">Server-side</strong><small>Client secret and refresh token are hidden</small></article></div>
+        <section class="panel"><div class="section-head"><div><span class="eyebrow">REQUIRED ENVIRONMENT</span><h2>Connection configuration</h2></div></div><pre class="env-block">SP_API_BASE_URL=https://sellingpartnerapi-eu.amazon.com
+SP_API_MARKETPLACE_ID=ARBP9OOSHTCHU
+SP_API_SELLER_ID=...
+LWA_CLIENT_ID=...
+LWA_CLIENT_SECRET=...
+LWA_REFRESH_TOKEN=...
+SIMULATION_MODE=true</pre><p class="safety-note">Keep simulation mode enabled until Amazon validation preview succeeds. Change it to false only for approved production publishing.</p></section>
+      </section>
+
+      <section id="view-security" class="view">
+        <div class="page-head"><div><span class="eyebrow">SECURITY HARDENING</span><h1>Security Center</h1><p>Production safeguards for confidential Amazon credentials and high-risk publishing operations.</p></div><div class="head-actions"><button id="enableEmergencyLock" class="danger">Lock Amazon writes</button><button id="releaseEmergencyLock" class="secondary">Release lock</button></div></div>
+        <div class="connection-grid">
+          <article class="panel connection-card"><span>Security readiness</span><strong id="securityScore">0%</strong><small id="securityReadiness">Checking controls…</small></article>
+          <article class="panel connection-card"><span>Emergency publish lock</span><strong id="emergencyState">LOCKED</strong><small id="securityChanged">Safe default</small></article>
+          <article class="panel connection-card"><span>Secret exposure</span><strong class="connection-ok">NONE</strong><small>Amazon secrets stay server-side</small></article>
+        </div>
+        <div class="two-column">
+          <section class="panel"><div class="section-head"><div><span class="eyebrow">CONTROL CHECKLIST</span><h2>Production security gates</h2></div></div><div id="securityControls" class="stack-list"></div></section>
+          <section class="panel"><div class="section-head"><div><span class="eyebrow">SAFE ARCHITECTURE</span><h2>How Amazon credentials are protected</h2></div></div><div class="security-flow"><div>Browser UI<br><small>No secrets</small></div><b>→</b><div>AEC Backend<br><small>Auth + roles</small></div><b>→</b><div>Encrypted Vault<br><small>Restricted access</small></div><b>→</b><div>Amazon SP-API<br><small>Approved calls only</small></div></div><div class="safety-note"><strong>Two-person control:</strong> a Reviewer approves the draft, then a different Publisher authorizes a 15-minute publishing window. The emergency lock overrides all publish permissions.</div></section>
+        </div>
+        <section class="panel"><div class="section-head"><div><span class="eyebrow">ROLE SEPARATION</span><h2>Least-privilege access</h2></div></div><div class="policy-grid compact"><article class="policy-card"><span class="policy-icon">CR</span><h3>Creator</h3><p>Creates drafts and uploads source files. Cannot approve or publish.</p><b>No Amazon writes</b></article><article class="policy-card"><span class="policy-icon">RV</span><h3>Reviewer</h3><p>Validates content and approves a draft. Cannot execute publication.</p><b>Independent review</b></article><article class="policy-card"><span class="policy-icon">PB</span><h3>Publisher</h3><p>Authorizes and executes approved publishing during a short-lived window.</p><b>15-minute authorization</b></article><article class="policy-card"><span class="policy-icon">AD</span><h3>Admin</h3><p>Manages security settings and can trigger the emergency disconnect process.</p><b>Audited actions</b></article></div></section>
+      </section>
+
+      <section id="view-approvals" class="view">
+        <div class="page-head"><div><span class="eyebrow">APPROVAL GATE</span><h1>Approvals</h1><p>Simulate every proposed change before you approve or reject it.</p></div><div class="head-actions"><button class="secondary" id="simulateAllButton">Simulate all visible</button><button class="primary" id="approveAllButton">Approve simulated</button></div></div>
+        <div class="filter-row"><button class="filter active" data-approval-filter="pending">Pending</button><button class="filter" data-approval-filter="approved">Approved</button><button class="filter" data-approval-filter="rejected">Rejected</button><button class="filter" data-approval-filter="all">All</button></div>
+        <div id="approvalsList" class="approval-grid"></div>
+      </section>
+
+      <section id="view-policies" class="view">
+        <div class="page-head"><div><span class="eyebrow">POLICY ENGINE</span><h1>Policy Center</h1><p>Rules currently enforced by AEC before Amazon execution.</p></div></div>
+        <div class="policy-grid">
+          <article class="policy-card"><span class="policy-icon">SKU</span><h3>SKU integrity</h3><p>Blocks missing or duplicate SKUs and validates child references against parent rows.</p><b>Critical gate</b></article>
+          <article class="policy-card"><span class="policy-icon">P/C</span><h3>Variation structure</h3><p>Checks parentage, relationship type, variation theme, color and size requirements.</p><b>High priority</b></article>
+          <article class="policy-card"><span class="policy-icon">▼</span><h3>Dropdown safety</h3><p>Maps local color names such as HAVAN, NABITY, ZITI and BETROLY to safe Amazon color-map values.</p><b>Approval required</b></article>
+          <article class="policy-card"><span class="policy-icon">IMG</span><h3>Image URL compliance</h3><p>Detects Google Drive page links and proposes direct online URLs readable by Amazon.</p><b>Auto-fix proposal</b></article>
+          <article class="policy-card"><span class="policy-icon">FPR</span><h3>Duplicate file protection</h3><p>Creates a SHA-256 fingerprint and blocks exact file duplicates before processing.</p><b>Persistent evidence</b></article>
+          <article class="policy-card"><span class="policy-icon">APP</span><h3>Protected execution</h3><p>No approved change is applied until a simulation record exists.</p><b>Mandatory</b></article>
+        </div>
+      </section>
+
+      <section id="view-orders" class="view">
+        <div class="page-head"><div><span class="eyebrow">ORDER INTELLIGENCE</span><h1>Orders</h1><p>Order-level view aggregated from Amazon transaction reports.</p></div><button class="primary" data-view-jump="overview">Upload transactions</button></div>
+        <div class="kpi-grid">
+          <article class="kpi"><span>Orders loaded</span><strong id="orderCountKpi">0</strong><small>distinct Amazon order IDs</small></article>
+          <article class="kpi"><span>Transaction rows</span><strong id="transactionRowsKpi">0</strong><small>all settlement movements</small></article>
+          <article class="kpi"><span>Gross product sales</span><strong id="orderSalesKpi">EGP 0</strong><small>before fees</small></article>
+          <article class="kpi"><span>Net total</span><strong id="orderNetKpi">EGP 0</strong><small>from transaction report</small></article>
+        </div>
+        <section class="panel table-panel"><div class="table-tools"><input id="orderSearch" placeholder="Search order ID, SKU, type…" /><span id="orderTableCount">0 orders</span></div><div class="table-wrap"><table><thead><tr><th>Order ID</th><th>Date</th><th>SKU</th><th>Type</th><th>Quantity</th><th>Product Sales</th><th>Fees</th><th>Net Total</th><th>Source</th></tr></thead><tbody id="ordersTable"></tbody></table></div></section>
+      </section>
+
+      <section id="view-profit" class="view">
+        <div class="page-head"><div><span class="eyebrow">FINANCE AGENT</span><h1>Sales & Profit</h1><p>Settlement-level revenue, fee and net payout intelligence.</p></div></div>
+        <div class="report-grid">
+          <article class="report-card"><span>Gross product sales</span><strong id="profitGross">EGP 0</strong><div class="bar"><i id="profitGrossBar"></i></div></article>
+          <article class="report-card"><span>Selling fees</span><strong id="profitSellingFees">EGP 0</strong><div class="bar"><i id="profitSellingBar"></i></div></article>
+          <article class="report-card"><span>FBA fees</span><strong id="profitFbaFees">EGP 0</strong><div class="bar"><i id="profitFbaBar"></i></div></article>
+          <article class="report-card"><span>Net total</span><strong id="profitNet">EGP 0</strong><div class="bar"><i id="profitNetBar"></i></div></article>
+        </div>
+        <div class="two-column">
+          <section class="panel"><div class="section-head"><div><span class="eyebrow">FEE PRESSURE</span><h2>Amazon cost ratio</h2></div></div><div id="feeInsight" class="empty">Upload a transaction report to calculate fee pressure.</div></section>
+          <section class="panel"><div class="section-head"><div><span class="eyebrow">SOURCE COVERAGE</span><h2>Transaction files</h2></div></div><div id="transactionFiles" class="stack-list"></div></section>
+        </div>
+      </section>
+
+      <section id="view-files" class="view">
+        <div class="page-head"><div><span class="eyebrow">FILE AGENT</span><h1>File Center</h1><p>Upload history, validation results, fingerprints, reports and approved patches.</p></div><button class="primary" id="filePageUploadButton">Upload file</button></div>
+        <section class="panel table-panel"><div class="table-wrap"><table><thead><tr><th>File</th><th>Type</th><th>Rows</th><th>Result</th><th>Issues</th><th>Fingerprint</th><th>Uploaded</th><th>Actions</th></tr></thead><tbody id="filesTable"></tbody></table></div></section>
+      </section>
+
+      <section id="view-reports" class="view">
+        <div class="page-head"><div><span class="eyebrow">SYSTEM REPORTS</span><h1>Validation reporting</h1><p>Consolidated quality and risk view across uploaded files.</p></div></div>
+        <div class="report-grid">
+          <article class="report-card"><span>Critical</span><strong id="reportCritical">0</strong><div class="bar"><i id="barCritical"></i></div></article>
+          <article class="report-card"><span>High</span><strong id="reportHigh">0</strong><div class="bar"><i id="barHigh"></i></div></article>
+          <article class="report-card"><span>Medium</span><strong id="reportMedium">0</strong><div class="bar"><i id="barMedium"></i></div></article>
+          <article class="report-card"><span>Low</span><strong id="reportLow">0</strong><div class="bar"><i id="barLow"></i></div></article>
+        </div>
+        <section class="panel"><div class="section-head"><div><span class="eyebrow">RECENT FILE QUALITY</span><h2>Processing summary</h2></div></div><div id="reportFiles" class="stack-list"></div></section>
+      </section>
+
+      <section id="view-agents" class="view">
+        <div class="page-head"><div><span class="eyebrow">AGENTIC LAYER</span><h1>Agents</h1><p>Specialized agents cooperate under one approval and audit model.</p></div></div>
+        <div id="agentsGrid" class="policy-grid"></div>
+      </section>
+
+
+      <section id="view-whatsapp" class="view">
+        <div class="page-head"><div><span class="eyebrow">SECURE COMMAND CHANNEL</span><h1>WhatsApp Control</h1><p>Receive product commands through WhatsApp Business Cloud. Messages create drafts only and never publish directly.</p></div></div>
+        <div class="connection-grid"><article class="panel connection-card"><span>WhatsApp connection</span><strong id="waStatus">NOT CONFIGURED</strong><small>Server-side credentials only</small></article><article class="panel connection-card"><span>Sender protection</span><strong id="waAllowlist">ALLOWLIST</strong><small>Unknown numbers are rejected</small></article><article class="panel connection-card"><span>Execution policy</span><strong class="connection-ok">DRAFT ONLY</strong><small>Approval required before Amazon</small></article></div>
+        <div class="two-column"><section class="panel"><div class="section-head"><div><span class="eyebrow">COMMAND FLOW</span><h2>Safe WhatsApp execution</h2></div></div><div class="security-flow"><div>WhatsApp<br><small>Authorized sender</small></div><b>→</b><div>n8n<br><small>Normalize + route</small></div><b>→</b><div>AEC Draft<br><small>Validate + approve</small></div><b>→</b><div>Amazon<br><small>Publisher only</small></div></div></section><section class="panel"><div class="section-head"><div><span class="eyebrow">ARABIC + ENGLISH</span><h2>Example commands</h2></div></div><pre>اعمل منتج SKU CK1 حذاء رجالي، أسود رمادي أبيض، المقاسات من 41 إلى 45، السعر 499، FBA</pre><pre>Create SKU S60 women's shoes, Black Beige White, sizes 37 to 41, price 549 EGP, FBA</pre><div class="safety-note">AEC creates a draft and returns the draft ID and number of variations. It never publishes directly from WhatsApp.</div></section></div>
+      </section>
+
+      <section id="view-automation" class="view">
+        <div class="page-head"><div><span class="eyebrow">AUTOMATION LAYER</span><h1>n8n Automation</h1><p>Orchestrate WhatsApp, AEC, notifications, Drive and future marketplace workflows without exposing Amazon credentials.</p></div></div>
+        <div class="connection-grid"><article class="panel connection-card"><span>n8n connection</span><strong id="n8nStatus">NOT CONFIGURED</strong><small>Shared-secret webhook authentication</small></article><article class="panel connection-card"><span>Included workflows</span><strong>2</strong><small>WhatsApp intake + approval notification</small></article><article class="panel connection-card"><span>Amazon writes</span><strong>BLOCKED</strong><small>n8n cannot bypass AEC approval</small></article></div>
+        <div class="policy-grid"><article class="policy-card"><span class="policy-icon">WA</span><h3>WhatsApp Intake</h3><p>Receives an authorized message, sends it to AEC, and confirms that a draft was created.</p><b>Draft only</b></article><article class="policy-card"><span class="policy-icon">APP</span><h3>Approval Notice</h3><p>Sends a notification after reviewer approval while keeping Publisher authorization separate.</p><b>Two-person control</b></article><article class="policy-card"><span class="policy-icon">LOG</span><h3>Execution Evidence</h3><p>Every inbound command is stored with source, sender, timestamp and resulting draft ID.</p><b>Audited</b></article></div>
+        <section class="panel"><div class="section-head"><div><span class="eyebrow">WORKFLOW FILES</span><h2>Import into n8n</h2></div></div><p>Import the JSON files from <code>aec-agent/n8n/workflows</code>, configure credentials inside n8n, then activate only after the AEC webhook secret and sender allowlist are set.</p></section>
+      </section>
+      <section id="view-audit" class="view">
+        <div class="page-head"><div><span class="eyebrow">FULL TRACEABILITY</span><h1>Audit Log</h1><p>File uploads, simulations, approvals, rejections and blocked actions.</p></div><button class="secondary" id="refreshAudit">Refresh</button></div>
+        <section class="panel"><div id="auditList" class="timeline"></div></section>
+      </section>
+    </main>
+    <aside id="productDrawer" class="product-drawer" aria-hidden="true">
+      <div class="drawer-head"><div><span class="eyebrow">LISTING INSPECTOR</span><h2 id="drawerSku">SKU</h2></div><button id="closeDrawer" class="icon-btn">×</button></div>
+      <div id="drawerContent"></div>
+    </aside>
+  </div>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <button id="modalClose" class="modal-close">×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>
